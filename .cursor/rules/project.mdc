@@ -5,5 +5,106 @@ alwaysApply: true
 # プロジェクトルール
 
 ## 概要
+- ブランド名は常に「Fushiyama」。
+- 週替わりで常に1商品のみを販売表示（トップでの主役）。
+- 商品画像は最大10枚、アーティスト紹介は最大3名。
+- 会員登録はメール＋パスワード。支払い情報（説明用・マスク済み）と1:1で紐付け。
 
-メモを管理するアプリ
+---
+
+## 画面/ページ構成
+- トップページ（Weekly Product + Artists + Company）
+  - 週替わり商品表示、画像スライダー（最大10枚）、BUYボタン（擬似・決済説明へ誘導）
+  - セクション「Artists」（英語表記の見出し、最大3名表示）
+  - フッターに会社情報（表記は「Fushiyama」のみ）
+- 会員登録ページ
+  - メール＋パスワード登録、成功後はトップへ遷移
+- 決済情報ページ（説明用フォーム）
+  - カードブランド、名義、末尾4桁、有効期限、請求先住所（任意）
+  - バリデーションエラー表示
+  - 確認ページで内容確認→登録で保存しトップへ
+- 管理（将来/今回最小）
+  - 週替わり商品の切替（`published` 切替＋`site_settings.current_product_id`更新）
+
+---
+
+## ルーティング（名前付き・Volt使用）
+- `GET /` → `home` … トップ（`livewire/home/index`）
+- `GET /register` → `auth.register` … 会員登録（標準フロー）
+- `GET /payment` → `payment.edit` … 決済情報入力（説明用）
+- `POST /payment` → `payment.update` … 入力保存（説明用）
+- `GET /payment/confirm` → `payment.confirm` … 確認画面
+- 管理系（将来）
+  - `GET /admin/products` → `admin.products.index`
+  - `POST /admin/site/current-product` → `admin.site.set-current-product`
+
+---
+
+## コンポーネント設計（Volt/Functional）
+- `resources/views/livewire/home/index.blade.php`
+  - props: `product`, `images[]`, `artists[]`
+- `resources/views/livewire/payment/edit.blade.php`
+  - state: `card_brand`, `last4`, `exp_month`, `exp_year`, `billing_name`, `address...`
+  - 送信先: `payment.update`
+- `resources/views/livewire/payment/confirm.blade.php`
+  - props: 入力値（セッション引継ぎ）
+  - 確定後トップへ
+- 共通
+  - `components/nav`, `components/footer`, `components/product-gallery`, `components/artist-card`
+
+---
+
+## データモデル（要点）
+- `users` に `is_admin`（bool, default false）を追加方針
+- `products` 1 — N `product_images`
+- `users` 1 — 1 `payment_profiles`
+- `site_settings` キー値ストア（`current_product_id`）
+
+詳細は `@database.mdc` を参照。
+
+---
+
+## 表示/文言ルール
+- ロゴは左上、社名は「Fushiyama」固定。
+- アーティストセクション見出しは英語 “Artists”。本文は日本語。
+- 価格は税込・円表記。例: `¥ 29,800`。
+- アクセシビリティ: 画像に `alt`、ボタンはラベル明示、フォーカス可視化。
+
+---
+
+## 画像保存と公開
+- 保存先（開発）:
+  - `storage/app/public/products/{product_id}/`
+  - `storage/app/public/artists/{artist_id}/`
+- 公開: `php artisan storage:link` により `public/storage` 配信
+- 本番は Filesystem 抽象で S3 等へ切替可能
+
+---
+
+## バリデーション/整合性
+- 商品画像は position 1..10 をユニークで採番（最大10枚）
+- アーティストは公開最大3名、表示順 1..3（アプリ層で制御）
+- 決済情報はブランド/末尾4桁/有効期限の整合性チェック（カード番号・CVVは保存しない）
+- 現在の表示商品は更新時に原子的に `current_product_id` を差し替え
+
+---
+
+## 認可/認証
+- 認証: メール＋パスワード（登録後トップへ）
+- 認可: 管理操作は `is_admin` による制御（Policy）
+
+---
+
+## スタイル/ビルド
+- TailwindCSS、Vite
+- レスポンシブ対応、ライト/ダーク両対応は任意（初期はライト）
+
+---
+
+## テスト方針
+- トップページ表示（公開商品・画像・アーティスト最大数の検証）
+- 会員登録フロー（成功→トップ遷移）
+- 決済情報入力→確認→保存（説明用）一連のバリデーション
+- 管理: current_product 切替の一貫性（将来）
+
+---
