@@ -3,9 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+// ホーム（公開）
+Volt::route('/', 'home.index')->name('home');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -17,6 +16,10 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+
+    // 決済情報（説明用）
+    Volt::route('payment', 'payment.edit')->name('payment.edit');
+    Volt::route('payment/confirm', 'payment.confirm')->name('payment.confirm');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
