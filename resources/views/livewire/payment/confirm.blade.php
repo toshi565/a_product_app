@@ -41,6 +41,9 @@ new class extends Component {
 
         session()->forget('payment_input');
 
+        // 購入完了のフラッシュ（説明用）
+        session()->flash('purchase_completed', true);
+
         $this->redirectRoute('home');
     }
 }; ?>

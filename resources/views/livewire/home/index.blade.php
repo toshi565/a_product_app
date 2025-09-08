@@ -47,21 +47,44 @@ with(function (): array {
         </header>
 
         <section class="mb-12">
+            @if (session('purchase_completed'))
+                <div class="mb-4 rounded-lg border bg-green-50 p-4 text-green-800">
+                    お買い上げありがとうございました。
+                </div>
+            @endif
             <h2 class="mb-4 text-xl font-bold">Weekly Product</h2>
 
             @if ($product)
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                    <div>
+                    <div class="relative">
                         @if ($images->isNotEmpty())
                             <div class="space-y-3">
                                 @foreach ($images as $image)
-                                    <img class="w-full rounded border object-cover"
-                                        src="{{ asset('storage/' . $image->path) }}"
-                                        alt="{{ $image->alt_text ?? $product->title }}">
+                                    <div class="relative">
+                                        <img class="w-full rounded border object-cover"
+                                            src="{{ asset('storage/' . $image->path) }}"
+                                            alt="{{ $image->alt_text ?? $product->title }}">
+                                        @if (session('purchase_completed'))
+                                            <div
+                                                class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                                <span
+                                                    class="rounded bg-black/60 px-6 py-2 text-2xl font-bold tracking-widest text-white">SOLD
+                                                    OUT</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 @endforeach
                             </div>
                         @else
-                            <div class="aspect-video w-full rounded border bg-gray-100"></div>
+                            <div class="relative aspect-video w-full rounded border bg-gray-100">
+                                @if (session('purchase_completed'))
+                                    <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                        <span
+                                            class="rounded bg-black/60 px-6 py-2 text-2xl font-bold tracking-widest text-white">SOLD
+                                            OUT</span>
+                                    </div>
+                                @endif
+                            </div>
                         @endif
                     </div>
                     <div class="flex flex-col gap-4">
@@ -76,9 +99,9 @@ with(function (): array {
                         @endif
                         <div class="mt-2 text-xl font-bold">¥ {{ number_format($product->price_yen) }}</div>
                         <div>
-                            <a href="#"
-                                class="inline-flex items-center rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-                                aria-disabled="true">BUY</a>
+                            <a href="{{ route('payment.edit') }}"
+                                class="inline-flex items-center rounded px-4 py-2 text-white {{ session('purchase_completed') ? 'bg-gray-400 cursor-not-allowed' : 'bg-black' }}"
+                                @disabled(session('purchase_completed')) wire:navigate>BUY</a>
                         </div>
                     </div>
                 </div>
