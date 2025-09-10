@@ -206,9 +206,9 @@ with(function (): array {
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                     @foreach ($artists as $artist)
                         <div class="rounded border p-4">
-                            @if ($artist->portrait_path)
-                                <img class="mb-3 h-40 w-full rounded object-cover"
-                                    src="{{ asset('storage/' . $artist->portrait_path) }}" alt="{{ $artist->name }}">
+                            @if ($artist->portrait_url)
+                                <img class="mb-3 h-40 w-full rounded object-cover" src="{{ $artist->portrait_url }}"
+                                    alt="{{ $artist->name }}">
                             @endif
                             <div class="text-sm uppercase tracking-wide text-gray-500">{{ $artist->title }}</div>
                             <div class="text-lg font-semibold">{{ $artist->name }}</div>

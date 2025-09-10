@@ -20,6 +20,11 @@ Route::middleware(['auth'])->group(function () {
     // 決済情報（説明用）
     Volt::route('payment', 'payment.edit')->name('payment.edit');
     Volt::route('payment/confirm', 'payment.confirm')->name('payment.confirm');
+
+    // 管理: 商品編集（現在の商品）
+    Volt::route('admin/products', 'admin.products.index')
+        ->middleware('can:admin')
+        ->name('admin.products.index');
 });
 
 require __DIR__ . '/auth.php';
