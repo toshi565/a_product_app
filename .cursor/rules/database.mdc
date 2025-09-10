@@ -1,0 +1,145 @@
+---
+alwaysApply: true
+---
+
+# データベースルール
+
+## 目的
+- 本サイトは「Fushiyama」ブランドで、週替わりで常に1商品のみを販売表示する。
+- 商品画像は最大10枚、アーティスト紹介は最大3名まで。
+- 会員登録（メール＋パスワード）と、支払い情報（説明用・マスク済み情報のみ保持）を紐付ける。
+
+---
+
+## テーブル定義
+
+### users（既存）
+- 変更方針: 必要に応じて `is_admin`（bool, default false）を追加して管理者判定に使用。
+- 紐付け: `users` 1 — 1 `payment_profiles`
+
+### products
+- id (PK)
+- title (string, 100)
+- description (text) … 商品説明
+- specs (json, nullable) … 箇条書き仕様の保持
+- price_yen (unsignedInteger) … 税込想定、円単位
+- status (enum: draft|published|archived, default draft)
+- published_at (timestamp, nullable)
+- created_by (FK → users.id, nullable)
+- timestamps, softDeletes
+- indexes: (status), (published_at)
+
+### product_images
+- id (PK)
+- product_id (FK → products.id, on delete cascade)
+- path (string, 255) … `storage/app/public/products/{product_id}/{position}_{uuid}.jpg`
+- alt_text (string, 150, nullable)
+- position (tinyInteger, 1..10)
+- created_at
+- constraints:
+  - unique (product_id, position)
+  - check (position between 1 and 10)
+
+### site_settings（キー値ストア／現在の表示商品を1件に制御）
+- key (PK, string, 50) … 例: `current_product_id`
+- value (json)
+- 用途:
+  - `current_product_id`: 現在トップで表示する `products.id`
+- 備考: 「常に1商品のみ」の厳格制約はアプリ層で担保（更新時にトランザクション＋検証）。
+
+### artists
+- id (PK)
+- name (string, 80)
+- title (string, 120) … 肩書（UIは英語見出し “Artists”）
+- bio (text, nullable)
+- portrait_path (string, 255, nullable) … `storage/app/public/artists/{id}/portrait.jpg`
+- display_order (tinyInteger, 1..3, nullable)
+- is_visible (boolean, default true)
+- timestamps
+- constraints:
+  - check (display_order is null or display_order between 1 and 3)
+  - unique (display_order) where is_visible = true はDBで困難のためアプリ層で制御
+- 表示要件: 公開中かつ display_order 昇順で最大3件
+
+### payment_profiles（決済情報の説明用プロファイル：機微情報は保持しない）
+- id (PK)
+- user_id (FK → users.id, unique) … 1ユーザー1プロファイル
+- card_brand (enum: visa|mastercard|amex|jcb|diners|discover|other)
+- last4 (char(4))
+- exp_month (tinyInteger) … 1–12
+- exp_year (smallInteger) … 4桁
+- billing_name (string, 100, nullable)
+- country (char(2), default 'JP')
+- postal_code (string, 20, nullable)
+- region (string, 100, nullable)
+- locality (string, 100, nullable)
+- line1 (string, 150, nullable)
+- line2 (string, 150, nullable)
+- external_customer_id (string, 64, nullable) … 将来のStripe等連携用
+- meta (json, nullable)
+- timestamps
+- constraints:
+  - check (exp_month between 1 and 12)
+  - unique (user_id)
+- 注意: カード番号・CVV は絶対に保存しない
+
+---
+
+## 関係
+- users 1 — 1 payment_profiles
+- products 1 — N product_images
+- site_settings は全体設定（`current_product_id`）として products を間接参照
+- artists は独立（トップページで最大3件を表示）
+
+---
+
+## バリデーション方針（アプリ層）
+- 商品画像: 1商品あたり最大10枚まで（position 1..10 を採番）
+- アーティスト: 公開中は最大3名まで（作成/更新時に合計を検証）
+- 現在の表示商品: 更新時に `site_settings.current_product_id` を原子更新
+- 決済情報: `card_brand` と `last4`、有効期限（年/月）の整合性チェック
+
+---
+
+## インデックス設計
+- products(status, published_at)
+- product_images(product_id, position) unique
+- payment_profiles(user_id) unique
+
+---
+
+## 画像保存
+- 物理保存先（開発）:
+  - `storage/app/public/products/{product_id}/`
+  - `storage/app/public/artists/{artist_id}/`
+- 公開方法:
+  - `php artisan storage:link` により `public/storage` から配信
+- 本番:
+  - S3等へ切替可能な抽象化（Laravel Filesystem `public` ディスク）
+
+---
+
+## シーディング
+- 管理者ユーザー（`is_admin = true`）
+- デモ商品1件 + 画像3枚
+- アーティスト最大3名（display_order 1..3）
+- `site_settings.current_product_id` をデモ商品IDに設定
+- 一般ユーザー1件 + マスク済み `payment_profiles` 1件
+
+---
+
+## マイグレーション命名（例）
+- `2025_01_01_000000_add_is_admin_to_users_table.php`
+- `2025_01_01_000010_create_products_table.php`
+- `2025_01_01_000020_create_product_images_table.php`
+- `2025_01_01_000030_create_site_settings_table.php`
+- `2025_01_01_000040_create_artists_table.php`
+- `2025_01_01_000050_create_payment_profiles_table.php`
+
+---
+
+## 運用メモ
+- 週替わり商品の切替は管理画面から:
+  1) 新商品を `published` に変更
+  2) `site_settings.current_product_id` をそのIDへ更新
+- 将来の外部決済導入時は `payment_profiles.external_customer_id` に顧客IDを保持し、機微情報は外部に委譲
