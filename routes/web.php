@@ -25,6 +25,11 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('admin/products', 'admin.products.index')
         ->middleware('can:admin')
         ->name('admin.products.index');
+
+    // 管理: アーティスト編集
+    Volt::route('admin/artists', 'admin.artists.index')
+        ->middleware('can:admin')
+        ->name('admin.artists.index');
 });
 
 require __DIR__ . '/auth.php';

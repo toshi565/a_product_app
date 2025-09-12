@@ -71,7 +71,7 @@ with(function (): array {
         <header class="mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="/images/logo.png" alt="Fushiyama" class="h-8 w-8" />
-                <h1 class="text-2xl font-semibold">Fushiyama</h1>
+                <h1 class="text-2xl font-semibold tracking-tight">Fushiyama</h1>
             </div>
         </header>
 
@@ -85,12 +85,12 @@ with(function (): array {
 
             @if ($product)
                 <div
-                    class="relative overflow-hidden rounded-2xl border bg-gradient-to-b from-gray-50 to-white p-6 shadow-sm md:p-8">
+                    class="relative overflow-hidden rounded-2xl border bg-gradient-to-b from-neutral-50 to-white p-6 shadow-sm md:p-8">
                     <div
-                        class="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-rose-100 opacity-30 blur-3xl">
+                        class="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-emerald-100 opacity-30 blur-3xl">
                     </div>
                     <div
-                        class="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-indigo-100 opacity-30 blur-3xl">
+                        class="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-amber-100 opacity-30 blur-3xl">
                     </div>
 
                     <div class="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -99,7 +99,8 @@ with(function (): array {
                                 <div class="space-y-3">
                                     @php $main = $images->first(); @endphp
                                     <div class="relative">
-                                        <img data-main-image class="w-full rounded border object-cover"
+                                        <img data-main-image
+                                            class="w-full rounded border object-cover aspect-[4/3] md:aspect-[3/2] lg:aspect-video"
                                             src="{{ asset('storage/' . $main->path) }}"
                                             alt="{{ $main->alt_text ?? $product->title }}">
                                         @if (session('purchase_completed'))
@@ -116,7 +117,7 @@ with(function (): array {
                                             @foreach ($images as $thumb)
                                                 <img data-thumb data-src="{{ asset('storage/' . $thumb->path) }}"
                                                     data-alt="{{ $thumb->alt_text ?? $product->title }}"
-                                                    class="h-20 w-full cursor-pointer rounded border object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-black' : '' }}"
+                                                    class="h-24 w-full cursor-pointer rounded border object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-black' : '' }}"
                                                     src="{{ asset('storage/' . $thumb->path) }}"
                                                     alt="{{ $thumb->alt_text ?? $product->title }}" role="button"
                                                     tabindex="0" {{ $loop->first ? 'aria-current=true' : '' }}>
@@ -189,7 +190,7 @@ with(function (): array {
                             <div class="mt-2 text-xl font-bold">¥ {{ number_format($product->price_yen) }}</div>
                             <div>
                                 <a href="{{ route('payment.edit') }}"
-                                    class="inline-flex items-center rounded px-4 py-2 text-white {{ session('purchase_completed') ? 'bg-gray-400 cursor-not-allowed' : 'bg-black' }}"
+                                    class="inline-flex items-center rounded px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 disabled:cursor-not-allowed {{ session('purchase_completed') ? 'bg-gray-400' : 'bg-neutral-900 hover:bg-black' }}"
                                     @disabled(session('purchase_completed')) wire:navigate>BUY</a>
                             </div>
                         </div>
@@ -205,10 +206,12 @@ with(function (): array {
             @if ($artists->isNotEmpty())
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                     @foreach ($artists as $artist)
-                        <div class="rounded border p-4">
+                        <div class="rounded border p-4 transition hover:shadow-sm">
                             @if ($artist->portrait_url)
-                                <img class="mb-3 h-40 w-full rounded object-cover" src="{{ $artist->portrait_url }}"
-                                    alt="{{ $artist->name }}">
+                                <div class="mb-3 w-full overflow-hidden rounded bg-gray-50">
+                                    <img class="w-full h-56 md:h-64 object-cover" src="{{ $artist->portrait_url }}"
+                                        alt="{{ $artist->name }}">
+                                </div>
                             @endif
                             <div class="text-sm uppercase tracking-wide text-gray-500">{{ $artist->title }}</div>
                             <div class="text-lg font-semibold">{{ $artist->name }}</div>
