@@ -99,7 +99,8 @@ with(function (): array {
                                 <div class="space-y-3">
                                     @php $main = $images->first(); @endphp
                                     <div class="relative">
-                                        <img data-main-image class="w-full rounded border object-cover"
+                                        <img data-main-image
+                                            class="w-full rounded border object-cover aspect-[4/3] md:aspect-[3/2] lg:aspect-video"
                                             src="{{ asset('storage/' . $main->path) }}"
                                             alt="{{ $main->alt_text ?? $product->title }}">
                                         @if (session('purchase_completed'))
@@ -116,7 +117,7 @@ with(function (): array {
                                             @foreach ($images as $thumb)
                                                 <img data-thumb data-src="{{ asset('storage/' . $thumb->path) }}"
                                                     data-alt="{{ $thumb->alt_text ?? $product->title }}"
-                                                    class="h-20 w-full cursor-pointer rounded border object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-black' : '' }}"
+                                                    class="h-24 w-full cursor-pointer rounded border object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-black' : '' }}"
                                                     src="{{ asset('storage/' . $thumb->path) }}"
                                                     alt="{{ $thumb->alt_text ?? $product->title }}" role="button"
                                                     tabindex="0" {{ $loop->first ? 'aria-current=true' : '' }}>
@@ -207,8 +208,10 @@ with(function (): array {
                     @foreach ($artists as $artist)
                         <div class="rounded border p-4 transition hover:shadow-sm">
                             @if ($artist->portrait_url)
-                                <img class="mb-3 h-40 w-full rounded object-cover" src="{{ $artist->portrait_url }}"
-                                    alt="{{ $artist->name }}">
+                                <div class="mb-3 w-full overflow-hidden rounded bg-gray-50">
+                                    <img class="w-full h-56 md:h-64 object-cover" src="{{ $artist->portrait_url }}"
+                                        alt="{{ $artist->name }}">
+                                </div>
                             @endif
                             <div class="text-sm uppercase tracking-wide text-gray-500">{{ $artist->title }}</div>
                             <div class="text-lg font-semibold">{{ $artist->name }}</div>

@@ -215,6 +215,9 @@ $createDraft = function () {
         'created_by' => $userId,
     ]);
     session()->flash('status', '下書き商品を作成しました');
+    // 作成直後に編集対象へセット
+    $this->editingProductId = $p->id;
+    $this->loadProductIntoState($p);
 };
 
 mount(function (?Product $product) {
