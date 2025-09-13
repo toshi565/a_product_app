@@ -6,6 +6,9 @@ use Livewire\Volt\Volt;
 // ホーム（公開）
 Volt::route('/', 'home.index')->name('home');
 
+// アーティスト詳細（公開）
+Volt::route('artists/{artist}', 'artist.show')->name('artists.show');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
