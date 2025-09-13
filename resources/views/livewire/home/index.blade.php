@@ -287,7 +287,8 @@ with(function (): array {
             @if ($artists->isNotEmpty())
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                     @foreach ($artists as $artist)
-                        <div class="rounded border border-brand-navy/20 p-4 transition hover:shadow-sm">
+                        <a href="{{ route('artists.show', ['artist' => $artist->id]) }}" wire:navigate
+                            class="block rounded border border-brand-navy/20 p-4 transition hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-gold">
                             @if ($artist->portrait_url)
                                 <div class="mb-3 w-full overflow-hidden rounded bg-brand-navy-50">
                                     <img class="w-full h-56 md:h-64 object-cover" src="{{ $artist->portrait_url }}"
@@ -299,7 +300,7 @@ with(function (): array {
                             @if ($artist->bio)
                                 <p class="mt-2 text-sm text-brand-navy/70">{{ $artist->bio }}</p>
                             @endif
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             @else
