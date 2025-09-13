@@ -276,6 +276,52 @@ $loadProductIntoState = function (Product $product) {
     $this->refreshImagesForEditing();
 };
 
+/** 商品を削除 */
+$deleteProduct = function (int $productId) {
+    $product = Product::find($productId);
+    if (!$product) {
+        session()->flash('status', '対象の商品が見つかりません');
+        return;
+    }
+
+    DB::transaction(function () use ($product) {
+        // 画像ファイルを削除
+        $disk = Storage::disk('public');
+        foreach ($product->images as $image) {
+            if ($image->path && $disk->exists($image->path)) {
+                $disk->delete($image->path);
+            }
+        }
+
+        // 商品と関連画像を削除
+        $product->images()->delete();
+        $product->forceDelete();
+
+        // 現在の商品として設定されている場合は解除
+        $currentProductId = DB::table('site_settings')->where('key', 'current_product_id')->value('value');
+        if ($currentProductId) {
+            $decoded = json_decode($currentProductId, true);
+            if (isset($decoded['id']) && $decoded['id'] === $product->id) {
+                DB::table('site_settings')->where('key', 'current_product_id')->delete();
+            }
+        }
+    });
+
+    // 編集中の商品が削除された場合は編集状態をクリア
+    if ($this->editingProductId === $productId) {
+        $this->editingProductId = null;
+        $this->title = '';
+        $this->description = '';
+        $this->price_yen = 0;
+        $this->specs = [];
+        $this->images = [];
+        $this->imagesForEditing = [];
+        $this->imageAlts = [];
+    }
+
+    session()->flash('status', '商品を削除しました');
+};
+
 /** 画像一覧をstateに再読み込み */
 $refreshImagesForEditing = function () {
     if (!$this->editingProductId) {
@@ -368,6 +414,9 @@ $refreshImagesForEditing = function () {
                                         </button>
                                         <button type="button" wire:click="setCurrent({{ $row->id }})"
                                             class="rounded bg-neutral-900 px-2.5 py-1.5 text-xs text-white hover:bg-black">現在商品に設定</button>
+                                        <button type="button" wire:click="deleteProduct({{ $row->id }})"
+                                            wire:confirm="この商品を削除しますか？関連する画像もすべて削除されます。"
+                                            class="rounded border border-red-300 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50">削除</button>
                                     </div>
                                 </td>
                             </tr>
@@ -467,6 +516,9 @@ $refreshImagesForEditing = function () {
 
             <div class="pt-2">
                 <button type="submit" class="rounded bg-neutral-900 px-4 py-2 text-white hover:bg-black">保存</button>
+                <button type="button" wire:click="deleteProduct({{ $editingProductId }})"
+                    wire:confirm="この商品を削除しますか？関連する画像もすべて削除されます。"
+                    class="ml-3 rounded border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50">削除</button>
                 <a href="{{ route('home') }}" class="ml-3 text-sm text-gray-600 underline" wire:navigate>トップに戻る</a>
             </div>
         </form>
