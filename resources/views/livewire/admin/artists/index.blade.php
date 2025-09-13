@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Artist;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 use function Livewire\Volt\mount;
@@ -21,6 +22,7 @@ state([
     'editingId' => null,
     'name' => '',
     'title' => '',
+    'genre' => '',
     'bio' => '',
     'display_order' => null,
     'is_visible' => true,
@@ -36,6 +38,7 @@ $startEdit = function (int $id) {
     $this->editingId = $a->id;
     $this->name = (string) $a->name;
     $this->title = (string) $a->title;
+    $this->genre = (string) ($a->genre ?? '');
     $this->bio = (string) ($a->bio ?? '');
     $this->display_order = $a->display_order;
     $this->is_visible = (bool) $a->is_visible;
@@ -46,6 +49,7 @@ $create = function () {
     $this->editingId = null;
     $this->name = '';
     $this->title = '';
+    $this->genre = '';
     $this->bio = '';
     $this->display_order = null;
     $this->is_visible = true;
@@ -56,6 +60,7 @@ $save = function () {
     $validated = $this->validate([
         'name' => ['required', 'string', 'max:80'],
         'title' => ['required', 'string', 'max:120'],
+        'genre' => ['nullable', 'string', 'max:50', Rule::in(Artist::allowedGenres())],
         'bio' => ['nullable', 'string'],
         'display_order' => ['nullable', 'integer', 'between:1,3'],
         'is_visible' => ['boolean'],
@@ -65,6 +70,7 @@ $save = function () {
     $attrs = [
         'name' => $validated['name'],
         'title' => $validated['title'],
+        'genre' => $validated['genre'] ?? null,
         'bio' => $validated['bio'] ?? null,
         'display_order' => $validated['display_order'] ?? null,
         'is_visible' => (bool) ($validated['is_visible'] ?? false),
@@ -156,6 +162,7 @@ $uploadPortrait = function () {
                             <th class="py-2 pr-3">表示順</th>
                             <th class="py-2 pr-3">氏名</th>
                             <th class="py-2 pr-3">肩書</th>
+                            <th class="py-2 pr-3">ジャンル</th>
                             <th class="py-2 pr-3">公開</th>
                             <th class="py-2">操作</th>
                         </tr>
@@ -166,6 +173,7 @@ $uploadPortrait = function () {
                                 <td class="py-2 pr-3">{{ $row->display_order ?? '-' }}</td>
                                 <td class="py-2 pr-3">{{ $row->name }}</td>
                                 <td class="py-2 pr-3">{{ $row->title }}</td>
+                                <td class="py-2 pr-3">{{ $row->genre ?? '-' }}</td>
                                 <td class="py-2 pr-3">
                                     @if ($row->is_visible)
                                         <span
@@ -218,6 +226,19 @@ $uploadPortrait = function () {
         </div>
 
         <div>
+            <label class="mb-1 block text-sm font-medium">ジャンル</label>
+            <select wire:model.live="genre" class="w-full rounded border px-3 py-2">
+                <option value="">選択してください</option>
+                @foreach (\App\Models\Artist::allowedGenres() as $g)
+                    <option value="{{ $g }}">{{ $g }}</option>
+                @endforeach
+            </select>
+            @error('genre')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
             <label class="mb-1 block text-sm font-medium">プロフィール</label>
             <textarea rows="5" wire:model.live="bio" class="w-full rounded border px-3 py-2"></textarea>
             @error('bio')
@@ -260,7 +281,8 @@ $uploadPortrait = function () {
             @elseif ($editingId)
                 @php $fresh = \App\Models\Artist::find($editingId); @endphp
                 @if ($fresh && $fresh->portrait_url)
-                    <img src="{{ $fresh->portrait_url }}" alt="" class="mt-2 h-32 w-32 rounded object-cover">
+                    <img src="{{ $fresh->portrait_url }}" alt=""
+                        class="mt-2 h-32 w-32 rounded object-cover">
                 @endif
             @endif
         </div>
