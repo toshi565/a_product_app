@@ -71,43 +71,45 @@ with(function (): array {
         <header class="mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="/images/logo.png" alt="Fushiyama" class="h-8 w-8" />
-                <h1 class="text-2xl font-semibold tracking-tight">Fushiyama</h1>
+                <h1 class="text-2xl font-semibold tracking-tight text-brand-navy">Weekly Product </h1>
             </div>
         </header>
 
-        <section class="mb-12">
-            @if (session('purchase_completed'))
-                <div class="mb-4 rounded-lg border bg-green-50 p-4 text-green-800">
+        <section class="mb-12"
+            @if (session('purchase_completed')) <div class="mb-4 rounded-lg border bg-brand-gold-50 p-4 text-brand-navy">
                     お買い上げありがとうございました。
-                </div>
-            @endif
-            <h2 class="mb-4 text-xl font-bold">Weekly Product</h2>
+                </div> @endif
+            <h2 class="mb-4 text-xl font-bold text-brand-navy">１つの商品ための販売サイト ~ 探し物はこれだった。 ~</h2>
+
+            <p class="mb-4 text-sm text-brand-navy/70">週に１度１つの商品が更新されます。</p>
+            <p class="mb-4 text-sm text-brand-navy/70">買い手と売り手２人だけの物販サイト。</p>
+            <p class="mb-4 text-sm text-brand-navy/70">商品はたった１つ。</p>
 
             @if ($product)
                 <div
-                    class="relative overflow-hidden rounded-2xl border bg-gradient-to-b from-neutral-50 to-white p-6 shadow-sm md:p-8">
+                    class="relative overflow-hidden rounded-2xl border border-brand-gold/30 bg-gradient-to-b from-brand-navy-50 to-white p-6 shadow-sm md:p-8">
                     <div
-                        class="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-emerald-100 opacity-30 blur-3xl">
+                        class="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-brand-gold-100 opacity-30 blur-3xl">
                     </div>
                     <div
-                        class="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-amber-100 opacity-30 blur-3xl">
+                        class="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-brand-gold-50 opacity-40 blur-3xl">
                     </div>
 
-                    <div class="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <div class="relative" id="product-gallery">
+                    <div class="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-12">
+                        <div class="relative md:col-span-7" id="product-gallery">
                             @if ($images->isNotEmpty())
                                 <div class="space-y-3">
                                     @php $main = $images->first(); @endphp
                                     <div class="relative">
                                         <img data-main-image
-                                            class="w-full rounded border object-cover aspect-[4/3] md:aspect-[3/2] lg:aspect-video"
+                                            class="h-96 md:h-[28rem] lg:h-[36rem] xl:h-[42rem] 2xl:h-[48rem] w-auto max-w-full mx-auto rounded border border-brand-navy/20 bg-white object-contain"
                                             src="{{ asset('storage/' . $main->path) }}"
                                             alt="{{ $main->alt_text ?? $product->title }}">
                                         @if (session('purchase_completed'))
                                             <div
                                                 class="pointer-events-none absolute inset-0 flex items-center justify-center">
                                                 <span
-                                                    class="rounded bg-black/60 px-6 py-2 text-2xl font-bold tracking-widest text-white">SOLD
+                                                    class="rounded bg-brand-navy/70 px-6 py-2 text-2xl font-bold tracking-widest text-white">SOLD
                                                     OUT</span>
                                             </div>
                                         @endif
@@ -117,7 +119,7 @@ with(function (): array {
                                             @foreach ($images as $thumb)
                                                 <img data-thumb data-src="{{ asset('storage/' . $thumb->path) }}"
                                                     data-alt="{{ $thumb->alt_text ?? $product->title }}"
-                                                    class="h-24 w-full cursor-pointer rounded border object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-black' : '' }}"
+                                                    class="h-24 w-full cursor-pointer rounded border border-brand-navy/20 object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-brand-gold' : '' }}"
                                                     src="{{ asset('storage/' . $thumb->path) }}"
                                                     alt="{{ $thumb->alt_text ?? $product->title }}" role="button"
                                                     tabindex="0" {{ $loop->first ? 'aria-current=true' : '' }}>
@@ -138,11 +140,11 @@ with(function (): array {
 
                                                 function activateThumb(active) {
                                                     thumbs.forEach(function(el) {
-                                                        el.classList.remove('ring-2', 'ring-black');
+                                                        el.classList.remove('ring-2', 'ring-brand-gold');
                                                         el.removeAttribute('aria-current');
                                                     });
                                                     if (active) {
-                                                        active.classList.add('ring-2', 'ring-black');
+                                                        active.classList.add('ring-2', 'ring-brand-gold');
                                                         active.setAttribute('aria-current', 'true');
                                                     }
                                                 }
@@ -165,68 +167,70 @@ with(function (): array {
                                     @endif
                                 </div>
                             @else
-                                <div class="relative aspect-video w-full rounded border bg-gray-100">
+                                <div
+                                    class="relative w-full h-96 md:h-[28rem] lg:h-[36rem] xl:h-[42rem] 2xl:h-[48rem] rounded border border-brand-navy/20 bg-brand-navy-50 flex items-center justify-center">
                                     @if (session('purchase_completed'))
                                         <div
                                             class="pointer-events-none absolute inset-0 flex items-center justify-center">
                                             <span
-                                                class="rounded bg-black/60 px-6 py-2 text-2xl font-bold tracking-widest text-white">SOLD
+                                                class="rounded bg-brand-navy/70 px-6 py-2 text-2xl font-bold tracking-widest text-white">SOLD
                                                 OUT</span>
                                         </div>
                                     @endif
                                 </div>
                             @endif
                         </div>
-                        <div class="flex flex-col gap-4">
-                            <h3 class="text-2xl font-semibold">{{ $product->title }}</h3>
-                            <div class="text-gray-600 whitespace-pre-line">{{ $product->description }}</div>
+                        <div class="flex flex-col gap-4 md:col-span-5">
+                            <h3 class="text-2xl font-semibold text-brand-navy">{{ $product->title }}</h3>
+                            <div class="text-brand-navy/70 whitespace-pre-line">{{ $product->description }}</div>
                             @if (is_array($product->specs) && !empty($product->specs))
-                                <ul class="list-inside list-disc text-sm text-gray-600">
+                                <ul class="list-inside list-disc text-sm text-brand-navy/70">
                                     @foreach ($product->specs as $spec)
                                         <li>{{ $spec }}</li>
                                     @endforeach
                                 </ul>
                             @endif
-                            <div class="mt-2 text-xl font-bold">¥ {{ number_format($product->price_yen) }}</div>
-                            <div>
+                            <div class="mt-3 flex flex-col items-end gap-2">
+                                <div class="text-2xl font-semibold text-brand-navy text-right">¥
+                                    {{ number_format($product->price_yen) }}</div>
                                 <a href="{{ route('payment.edit') }}"
-                                    class="inline-flex items-center rounded px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 disabled:cursor-not-allowed {{ session('purchase_completed') ? 'bg-gray-400' : 'bg-neutral-900 hover:bg-black' }}"
+                                    class="inline-flex w-auto justify-self-end items-center rounded bg-brand-navy bg-neutral-900 px-4 py-2 text-white shadow-sm transition hover:bg-brand-navy/90 hover:bg-black focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 disabled:cursor-not-allowed {{ session('purchase_completed') ? 'opacity-60' : '' }}"
                                     @disabled(session('purchase_completed')) wire:navigate>BUY</a>
                             </div>
                         </div>
                     </div>
                 </div>
             @else
-                <div class="rounded border p-6 text-gray-600">現在表示できる商品がありません。</div>
+                <div class="rounded border border-brand-navy/20 p-6 text-brand-navy/70">現在表示できる商品がありません。</div>
             @endif
         </section>
 
         <section class="mb-16">
-            <h2 class="mb-4 text-xl font-bold">Artists</h2>
+            <h2 class="mb-4 text-xl font-bold text-brand-navy">Artists</h2>
             @if ($artists->isNotEmpty())
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                     @foreach ($artists as $artist)
-                        <div class="rounded border p-4 transition hover:shadow-sm">
+                        <div class="rounded border border-brand-navy/20 p-4 transition hover:shadow-sm">
                             @if ($artist->portrait_url)
-                                <div class="mb-3 w-full overflow-hidden rounded bg-gray-50">
+                                <div class="mb-3 w-full overflow-hidden rounded bg-brand-navy-50">
                                     <img class="w-full h-56 md:h-64 object-cover" src="{{ $artist->portrait_url }}"
                                         alt="{{ $artist->name }}">
                                 </div>
                             @endif
-                            <div class="text-sm uppercase tracking-wide text-gray-500">{{ $artist->title }}</div>
-                            <div class="text-lg font-semibold">{{ $artist->name }}</div>
+                            <div class="text-sm uppercase tracking-wide text-brand-navy/60">{{ $artist->title }}</div>
+                            <div class="text-lg font-semibold text-brand-navy">{{ $artist->name }}</div>
                             @if ($artist->bio)
-                                <p class="mt-2 text-sm text-gray-600">{{ $artist->bio }}</p>
+                                <p class="mt-2 text-sm text-brand-navy/70">{{ $artist->bio }}</p>
                             @endif
                         </div>
                     @endforeach
                 </div>
             @else
-                <div class="rounded border p-6 text-gray-600">公開中のアーティストはいません。</div>
+                <div class="rounded border border-brand-navy/20 p-6 text-brand-navy/70">公開中のアーティストはいません。</div>
             @endif
         </section>
 
-        <footer class="py-8 text-center text-sm text-gray-500">
+        <footer class="py-8 text-center text-sm text-brand-navy/60">
             © {{ date('Y') }} Fushiyama
         </footer>
     </div>
