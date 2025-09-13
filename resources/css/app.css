@@ -23,16 +23,44 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    /* Brand colors: Navy & Gold */
+    --color-brand-navy-50: #edf2f8;
+    --color-brand-navy-100: #d7e1ef;
+    --color-brand-navy-200: #b4c7e0;
+    --color-brand-navy-300: #86a3cc;
+    --color-brand-navy-400: #577eb5;
+    --color-brand-navy-500: #355f9e;
+    /* mid */
+    --color-brand-navy-600: #254b83;
+    --color-brand-navy-700: #1d3d6b;
+    --color-brand-navy-800: #172f53;
+    /* primary navy */
+    --color-brand-navy-900: #11223d;
+
+    --color-brand-gold-50: #fff8e8;
+    --color-brand-gold-100: #feefcc;
+    --color-brand-gold-200: #fde29e;
+    --color-brand-gold-300: #fcd06a;
+    --color-brand-gold-400: #f9bd38;
+    --color-brand-gold-500: #e7a716;
+    /* primary gold */
+    --color-brand-gold-600: #c68a0f;
+    --color-brand-gold-700: #a26d0e;
+    --color-brand-gold-800: #7c520f;
+    --color-brand-gold-900: #5c3e0e;
+
+    /* Accent tokens tuned to brand */
+    --color-accent: var(--color-brand-navy-800);
+    --color-accent-content: var(--color-brand-navy-800);
     --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        /* In dark mode, use gold as accent for contrast */
+        --color-accent: var(--color-brand-gold-500);
+        --color-accent-content: var(--color-brand-gold-500);
+        --color-accent-foreground: var(--color-brand-navy-900);
     }
 }
 
@@ -47,12 +75,45 @@
     }
 }
 
+/* Brand utilities */
+@utility bg-brand-navy {
+    background-color: var(--color-brand-navy-800);
+}
+
+@utility text-brand-navy {
+    color: var(--color-brand-navy-800);
+}
+
+@utility border-brand-navy {
+    border-color: var(--color-brand-navy-800);
+}
+
+@utility ring-brand-navy {
+    --tw-ring-color: var(--color-brand-navy-800);
+}
+
+@utility bg-brand-gold {
+    background-color: var(--color-brand-gold-500);
+}
+
+@utility text-brand-gold {
+    color: var(--color-brand-gold-500);
+}
+
+@utility border-brand-gold {
+    border-color: var(--color-brand-gold-500);
+}
+
+@utility ring-brand-gold {
+    --tw-ring-color: var(--color-brand-gold-500);
+}
+
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],
