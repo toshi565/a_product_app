@@ -108,6 +108,42 @@ $toggleVisible = function (int $id) {
 };
 
 /**
+ * アーティストを削除
+ */
+$deleteArtist = function (int $artistId) {
+    $artist = Artist::find($artistId);
+    if (!$artist) {
+        session()->flash('status', '対象のアーティストが見つかりません');
+        return;
+    }
+
+    // ポートレート画像ファイルを削除
+    if ($artist->portrait_path) {
+        $disk = Storage::disk('public');
+        if ($disk->exists($artist->portrait_path)) {
+            $disk->delete($artist->portrait_path);
+        }
+    }
+
+    // アーティストを削除
+    $artist->delete();
+
+    // 編集中のアーティストが削除された場合は編集状態をクリア
+    if ($this->editingId === $artistId) {
+        $this->editingId = null;
+        $this->name = '';
+        $this->title = '';
+        $this->genre = '';
+        $this->bio = '';
+        $this->display_order = null;
+        $this->is_visible = true;
+        $this->portrait = null;
+    }
+
+    session()->flash('status', 'アーティストを削除しました');
+};
+
+/**
  * 写真のみアップロード（即時反映）
  */
 $uploadPortrait = function () {
@@ -189,6 +225,9 @@ $uploadPortrait = function () {
                                             class="rounded bg-neutral-900 px-2.5 py-1.5 text-xs text-white hover:bg-black">編集</button>
                                         <button type="button" wire:click="toggleVisible({{ $row->id }})"
                                             class="rounded border px-2.5 py-1.5 text-xs hover:bg-gray-50">公開切替</button>
+                                        <button type="button" wire:click="deleteArtist({{ $row->id }})"
+                                            wire:confirm="このアーティストを削除しますか？関連する画像も削除されます。"
+                                            class="rounded border border-red-300 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50">削除</button>
                                     </div>
                                 </td>
                             </tr>
@@ -277,7 +316,8 @@ $uploadPortrait = function () {
             @enderror
             <div class="mt-2 text-sm text-gray-600" wire:loading wire:target="portrait">アップロード準備中...</div>
             @if ($portrait)
-                <img src="{{ $portrait->temporaryUrl() }}" alt="" class="mt-2 h-32 w-32 rounded object-cover">
+                <img src="{{ $portrait->temporaryUrl() }}" alt=""
+                    class="mt-2 h-32 w-32 rounded object-cover">
             @elseif ($editingId)
                 @php $fresh = \App\Models\Artist::find($editingId); @endphp
                 @if ($fresh && $fresh->portrait_url)
@@ -289,6 +329,11 @@ $uploadPortrait = function () {
 
         <div class="pt-2">
             <button type="submit" class="rounded bg-neutral-900 px-4 py-2 text-white hover:bg-black">保存</button>
+            @if ($editingId)
+                <button type="button" wire:click="deleteArtist({{ $editingId }})"
+                    wire:confirm="このアーティストを削除しますか？関連する画像も削除されます。"
+                    class="ml-3 rounded border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50">削除</button>
+            @endif
             <a href="{{ route('home') }}" class="ml-3 text-sm text-gray-600 underline" wire:navigate>トップに戻る</a>
         </div>
     </form>
