@@ -76,10 +76,12 @@ class DatabaseSeeder extends Seeder
             }
 
             // アーティスト最大3名
+            $demoGenres = ['クラフト作家', 'ワインの輸入元', 'コーヒーの焙煎家'];
             foreach ([1, 2, 3] as $order) {
                 Artist::create([
                     'name' => "Artist {$order}",
                     'title' => 'Creator',
+                    'genre' => $demoGenres[$order - 1] ?? null,
                     'bio' => 'デモの略歴です。',
                     'portrait_path' => null,
                     'display_order' => $order,

@@ -21,6 +21,7 @@ class Artist extends Model
     protected $fillable = [
         'name',
         'title',
+        'genre',
         'bio',
         'portrait_path',
         'display_order',
@@ -35,6 +36,20 @@ class Artist extends Model
         return [
             'display_order' => 'integer',
             'is_visible' => 'boolean',
+        ];
+    }
+
+    /**
+     * 許可するジャンル一覧
+     *
+     * @return list<string>
+     */
+    public static function allowedGenres(): array
+    {
+        return [
+            'クラフト作家',
+            'ワインの輸入元',
+            'コーヒーの焙煎家',
         ];
     }
 
