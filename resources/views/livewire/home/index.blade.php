@@ -70,8 +70,8 @@ with(function (): array {
     <div class="mx-auto max-w-5xl px-4 py-8">
         <header class="mb-8 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="/images/logo.png" alt="Fushiyama" class="h-8 w-8" />
-                <h1 class="text-2xl font-semibold tracking-tight text-brand-navy">Weekly Product </h1>
+                <img src="/images/logo.png" alt="Fushiyama" class="h-[2.75rem] w-[2.75rem]" />
+                <h1 class="text-[1.75rem] font-semibold tracking-tight text-brand-navy">Weekly Product </h1>
             </div>
         </header>
 
@@ -115,15 +115,36 @@ with(function (): array {
                                         @endif
                                     </div>
                                     @if ($images->count() >= 1)
-                                        <div class="grid grid-cols-4 gap-2 sm:grid-cols-6">
-                                            @foreach ($images as $thumb)
-                                                <img data-thumb data-src="{{ asset('storage/' . $thumb->path) }}"
-                                                    data-alt="{{ $thumb->alt_text ?? $product->title }}"
-                                                    class="h-24 w-full cursor-pointer rounded border border-brand-navy/20 object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-brand-gold' : '' }}"
-                                                    src="{{ asset('storage/' . $thumb->path) }}"
-                                                    alt="{{ $thumb->alt_text ?? $product->title }}" role="button"
-                                                    tabindex="0" {{ $loop->first ? 'aria-current=true' : '' }}>
-                                            @endforeach
+                                        <div class="relative">
+                                            <button type="button" aria-label="前へ" data-thumb-prev
+                                                class="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow ring-1 ring-brand-navy/20 hover:bg-white focus:outline-none focus:ring-2 focus:ring-brand-gold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                    fill="currentColor" class="h-5 w-5 text-brand-navy">
+                                                    <path fill-rule="evenodd"
+                                                        d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <div data-thumbs-track
+                                                class="flex gap-2 overflow-x-auto scroll-smooth px-8">
+                                                @foreach ($images as $thumb)
+                                                    <img data-thumb data-src="{{ asset('storage/' . $thumb->path) }}"
+                                                        data-alt="{{ $thumb->alt_text ?? $product->title }}"
+                                                        class="h-24 w-28 flex-none cursor-pointer rounded border border-brand-navy/20 object-cover transition hover:opacity-80 focus:outline-none {{ $loop->first ? 'ring-2 ring-brand-gold' : '' }}"
+                                                        src="{{ asset('storage/' . $thumb->path) }}"
+                                                        alt="{{ $thumb->alt_text ?? $product->title }}" role="button"
+                                                        tabindex="0" {{ $loop->first ? 'aria-current=true' : '' }}>
+                                                @endforeach
+                                            </div>
+                                            <button type="button" aria-label="次へ" data-thumb-next
+                                                class="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow ring-1 ring-brand-navy/20 hover:bg-white focus:outline-none focus:ring-2 focus:ring-brand-gold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                    fill="currentColor" class="h-5 w-5 text-brand-navy">
+                                                    <path fill-rule="evenodd"
+                                                        d="M8.22 19.78a.75.75 0 010-1.06L14.94 12 8.22 5.28a.75.75 0 111.06-1.06l7.25 7.25a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
                                         </div>
                                         <script>
                                             (function() {
@@ -132,6 +153,9 @@ with(function (): array {
                                                 var mainImg = gallery.querySelector('[data-main-image]');
                                                 if (!mainImg) return;
                                                 var thumbs = gallery.querySelectorAll('[data-thumb]');
+                                                var track = gallery.querySelector('[data-thumbs-track]');
+                                                var prevBtn = gallery.querySelector('[data-thumb-prev]');
+                                                var nextBtn = gallery.querySelector('[data-thumb-next]');
 
                                                 function setMain(src, alt) {
                                                     if (src) mainImg.src = src;
@@ -162,6 +186,59 @@ with(function (): array {
                                                         }
                                                     });
                                                 });
+
+                                                // サムネイルスライダー（ゆっくりスライド）
+                                                if (track) {
+                                                    var stepPx = (function() {
+                                                        var first = thumbs[0];
+                                                        if (!first) return 120;
+                                                        var rect = first.getBoundingClientRect();
+                                                        return Math.max(100, Math.floor(rect.width + 8));
+                                                    })();
+
+                                                    function scrollByStep(multiplier) {
+                                                        try {
+                                                            track.scrollBy({
+                                                                left: stepPx * multiplier,
+                                                                behavior: 'smooth'
+                                                            });
+                                                        } catch (e) {
+                                                            track.scrollLeft += stepPx * multiplier;
+                                                        }
+                                                    }
+
+                                                    if (prevBtn) prevBtn.addEventListener('click', function() {
+                                                        scrollByStep(-2);
+                                                    });
+                                                    if (nextBtn) nextBtn.addEventListener('click', function() {
+                                                        scrollByStep(2);
+                                                    });
+
+                                                    var autoDir = 1; // 1: 右へ, -1: 左へ
+                                                    var autoTimer = null;
+
+                                                    function startAuto() {
+                                                        if (autoTimer) return;
+                                                        autoTimer = setInterval(function() {
+                                                            var maxScroll = track.scrollWidth - track.clientWidth;
+                                                            if (track.scrollLeft <= 0) autoDir = 1;
+                                                            if (Math.abs(track.scrollLeft - maxScroll) < 2) autoDir = -1;
+                                                            scrollByStep(autoDir);
+                                                        }, 4000); // ゆっくり（4秒間隔）
+                                                    }
+
+                                                    function stopAuto() {
+                                                        if (!autoTimer) return;
+                                                        clearInterval(autoTimer);
+                                                        autoTimer = null;
+                                                    }
+
+                                                    startAuto();
+                                                    track.addEventListener('mouseenter', stopAuto);
+                                                    track.addEventListener('mouseleave', startAuto);
+                                                    track.addEventListener('focusin', stopAuto);
+                                                    track.addEventListener('focusout', startAuto);
+                                                }
                                             })();
                                         </script>
                                     @endif
