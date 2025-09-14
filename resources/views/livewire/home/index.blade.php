@@ -81,7 +81,7 @@ with(function (): array {
         </header>
 
         <section class="mb-12">
-            @if ($isPurchaseCompleted)
+            @if (session('purchase_completed'))
                 <div class="mb-4 rounded-lg border bg-brand-gold-50 p-4 text-brand-navy">
                     お買い上げありがとうございました。
                 </div>
