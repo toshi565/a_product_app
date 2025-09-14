@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\PurchaseHelper;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Support\Facades\Auth;
@@ -27,10 +28,14 @@ with(function (): array {
 
     $products = Product::query()->orderByRaw("CASE WHEN status = 'published' THEN 0 ELSE 1 END")->orderByDesc('published_at')->orderByDesc('created_at')->limit(50)->get();
 
+    // 購入完了状態をチェック
+    $isPurchaseCompleted = PurchaseHelper::isPurchaseCompleted();
+
     return [
         'currentProductId' => $currentProductId,
         'product' => $currentProduct,
         'products' => $products,
+        'isPurchaseCompleted' => $isPurchaseCompleted,
     ];
 });
 
@@ -345,6 +350,12 @@ $refreshImagesForEditing = function () {
     $this->imagesForEditing = $images;
     $this->imageAlts = collect($images)->mapWithKeys(fn($i) => [$i['id'] => (string) ($i['alt_text'] ?? '')])->toArray();
 };
+
+/** 購入状態をリセット */
+$resetPurchaseStatus = function () {
+    PurchaseHelper::resetPurchaseStatus();
+    session()->flash('status', '購入状態をリセットしました');
+};
 ?>
 
 <div class="mx-auto max-w-5xl px-4 py-8">
@@ -352,6 +363,18 @@ $refreshImagesForEditing = function () {
 
     @if (session('status'))
         <div class="mb-4 rounded border bg-green-50 p-3 text-green-700">{{ session('status') }}</div>
+    @endif
+
+    @if ($isPurchaseCompleted)
+        <div class="mb-4 rounded border bg-amber-50 p-3 text-amber-700">
+            <div class="flex items-center justify-between">
+                <span>⚠️ 商品が購入済みの状態です。BUYボタンは無効化されています。</span>
+                <button wire:click="resetPurchaseStatus" wire:confirm="購入状態をリセットしますか？これによりBUYボタンが再有効化されます。"
+                    class="rounded bg-amber-600 px-3 py-1 text-sm text-white hover:bg-amber-700">
+                    購入状態をリセット
+                </button>
+            </div>
+        </div>
     @endif
 
     <section class="mb-8 rounded-lg border bg-white p-4">
@@ -498,7 +521,8 @@ $refreshImagesForEditing = function () {
 
             <div>
                 <label class="mb-1 block text-sm font-medium">画像追加（最大10枚まで加算）</label>
-                <input id="images-input" type="file" wire:model="images" multiple accept="image/*" class="hidden" />
+                <input id="images-input" type="file" wire:model="images" multiple accept="image/*"
+                    class="hidden" />
                 <label for="images-input"
                     class="inline-flex cursor-pointer items-center rounded border px-3 py-1.5 text-sm hover:bg-gray-50">ファイルを選択</label>
                 @error('images.*')

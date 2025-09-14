@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\PurchaseHelper;
 use App\Models\PaymentProfile;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -41,6 +42,9 @@ new class extends Component {
 
         session()->forget('payment_input');
 
+        // 購入完了状態をデータベースに永続化
+        PurchaseHelper::setPurchaseCompleted(true);
+
         // 購入完了のフラッシュ（説明用）
         session()->flash('purchase_completed', true);
 
@@ -63,6 +67,6 @@ new class extends Component {
 
     <div class="flex items-center gap-3">
         <a href="{{ route('payment.edit') }}" class="rounded border px-4 py-2">戻る</a>
-        <button wire:click="store" class="rounded bg-black px-4 py-2 text-white">登録</button>
+        <button wire:click="store" class="rounded bg-black px-4 py-2 text-white">購入完了</button>
     </div>
 </section>
