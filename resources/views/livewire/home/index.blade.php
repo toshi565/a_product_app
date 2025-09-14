@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\PurchaseHelper;
 use App\Models\Artist;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
@@ -58,10 +59,14 @@ with(function (): array {
 
     $artists = Artist::query()->where('is_visible', true)->orderBy('display_order')->limit(3)->get();
 
+    // 購入完了状態をチェック
+    $isPurchaseCompleted = PurchaseHelper::isPurchaseCompleted();
+
     return [
         'product' => $product,
         'images' => $images,
         'artists' => $artists,
+        'isPurchaseCompleted' => $isPurchaseCompleted,
     ];
 });
 ?>
@@ -75,10 +80,12 @@ with(function (): array {
             </div>
         </header>
 
-        <section class="mb-12"
-            @if (session('purchase_completed')) <div class="mb-4 rounded-lg border bg-brand-gold-50 p-4 text-brand-navy">
+        <section class="mb-12">
+            @if ($isPurchaseCompleted)
+                <div class="mb-4 rounded-lg border bg-brand-gold-50 p-4 text-brand-navy">
                     お買い上げありがとうございました。
-                </div> @endif
+                </div>
+            @endif
             <h2 class="mb-4 text-xl font-bold text-brand-navy">１つの商品ための販売サイト ~ 探し物はこれだった。 ~</h2>
 
             <p class="mb-4 text-sm text-brand-navy/70">週に１度１つの商品が更新されます。</p>
@@ -105,7 +112,7 @@ with(function (): array {
                                             class="h-96 md:h-[28rem] lg:h-[36rem] xl:h-[42rem] 2xl:h-[48rem] w-auto max-w-full mx-auto rounded border border-brand-navy/20 bg-white object-contain"
                                             src="{{ asset('storage/' . $main->path) }}"
                                             alt="{{ $main->alt_text ?? $product->title }}">
-                                        @if (session('purchase_completed'))
+                                        @if ($isPurchaseCompleted)
                                             <div
                                                 class="pointer-events-none absolute inset-0 flex items-center justify-center">
                                                 <span
@@ -246,7 +253,7 @@ with(function (): array {
                             @else
                                 <div
                                     class="relative w-full h-96 md:h-[28rem] lg:h-[36rem] xl:h-[42rem] 2xl:h-[48rem] rounded border border-brand-navy/20 bg-brand-navy-50 flex items-center justify-center">
-                                    @if (session('purchase_completed'))
+                                    @if ($isPurchaseCompleted)
                                         <div
                                             class="pointer-events-none absolute inset-0 flex items-center justify-center">
                                             <span
@@ -270,9 +277,16 @@ with(function (): array {
                             <div class="mt-3 flex flex-col items-end gap-2">
                                 <div class="text-2xl font-semibold text-brand-navy text-right">¥
                                     {{ number_format($product->price_yen) }}</div>
-                                <a href="{{ route('payment.edit') }}"
-                                    class="inline-flex w-auto justify-self-end items-center rounded bg-brand-navy bg-neutral-900 px-4 py-2 text-white shadow-sm transition hover:bg-brand-navy/90 hover:bg-black focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 disabled:cursor-not-allowed {{ session('purchase_completed') ? 'opacity-60' : '' }}"
-                                    @disabled(session('purchase_completed')) wire:navigate>BUY</a>
+                                @if ($isPurchaseCompleted)
+                                    <button disabled
+                                        class="inline-flex w-auto justify-self-end items-center rounded bg-gray-400 px-4 py-2 text-white shadow-sm cursor-not-allowed opacity-60">
+                                        SOLD OUT
+                                    </button>
+                                @else
+                                    <a href="{{ route('payment.edit') }}"
+                                        class="inline-flex w-auto justify-self-end items-center rounded bg-brand-navy bg-neutral-900 px-4 py-2 text-white shadow-sm transition hover:bg-brand-navy/90 hover:bg-black focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2"
+                                        wire:navigate>BUY</a>
+                                @endif
                             </div>
                         </div>
                     </div>

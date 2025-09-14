@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\PurchaseHelper;
 use App\Models\PaymentProfile;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -19,6 +20,17 @@ new class extends Component {
 
     public function mount(): void
     {
+        if (!Auth::check()) {
+            $this->redirectRoute('login');
+            return;
+        }
+
+        // 購入完了済みの場合はホームにリダイレクト
+        if (PurchaseHelper::isPurchaseCompleted()) {
+            $this->redirectRoute('home');
+            return;
+        }
+
         $profile = Auth::user()?->paymentProfile;
         if ($profile) {
             $this->card_brand = $profile->card_brand;
