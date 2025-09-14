@@ -94,6 +94,12 @@ class DatabaseSeeder extends Seeder
                 ['key' => 'current_product_id'],
                 ['value' => json_encode(['id' => $product->id], JSON_UNESCAPED_UNICODE)]
             );
+
+            // サイト設定: 購入完了状態（初期状態はfalse）
+            DB::table('site_settings')->updateOrInsert(
+                ['key' => 'purchase_completed'],
+                ['value' => json_encode(['completed' => false])]
+            );
         });
     }
 }

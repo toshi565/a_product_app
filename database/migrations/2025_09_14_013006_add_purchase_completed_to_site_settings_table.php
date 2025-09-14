@@ -12,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 購入完了状態を管理するための設定を追加
-        DB::table('site_settings')->insertOrIgnore([
-            'key' => 'purchase_completed',
-            'value' => json_encode(['completed' => false]),
-        ]);
+        // 購入完了状態を管理するための設定を追加（初期状態はfalse）
+        DB::table('site_settings')->updateOrInsert(
+            ['key' => 'purchase_completed'],
+            ['value' => json_encode(['completed' => false])]
+        );
     }
 
     /**
